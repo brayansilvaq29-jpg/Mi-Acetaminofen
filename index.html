@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Kei 💙</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background-color: #02020a; 
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      cursor: pointer; 
+    }
+
+    #canvas-espacio {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1;
+    }
+
+    #flash-supernova {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 250vw; height: 250vw; 
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(230,245,255,0.9) 0%, rgba(100, 200, 255, 0.5) 20%, rgba(50, 100, 255, 0.2) 45%, rgba(0,0,0,0) 70%);
+      mix-blend-mode: screen; 
+      opacity: 0;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* PANTALLA DE INICIO */
+    #pantalla-inicio {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(2, 2, 10, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      transition: opacity 1s ease-in-out;
+    }
+
+    #pantalla-inicio h2 {
+      font-size: 2.5rem;
+      font-family: 'Georgia', serif;
+      color: #fff;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px #00d2ff;
+    }
+
+    #pantalla-inicio p {
+      font-size: 1.2rem;
+      color: #a0c4ff;
+      letter-spacing: 2px;
+      animation: parpadeo 1.5s infinite alternate;
+    }
+
+    @keyframes parpadeo {
+      0% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    /* TÍTULO FIJO */
+    #titulo-fijo {
+      position: fixed;
+      top: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 30;
+      pointer-events: none; 
+    }
+
+    #titulo-fijo h1 {
+      font-size: 3.8rem;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 0 10px #00d2ff, 0 0 25px #3a7bd5, 0 0 45px #0052d4;
+      animation: latido 3s ease-in-out infinite alternate; 
+      margin-bottom: -5px;
+    }
+
+    #titulo-fijo p {
+      font-size: 1.2rem;
+      color: #d1e8ff;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(100, 200, 255, 0.8);
+    }
+
+    /* ==========================================
+       ESTILOS DEL SOBRE Y LA CARTA 💌
+       ========================================== */
+    #sobre-sorpresa {
+      font-size: 5rem; 
+      cursor: pointer;
+      filter: drop-shadow(0 0 15px #00d2ff) drop-shadow(0 0 30px #0052d4);
+      animation: flotar 3s ease-in-out infinite alternate, latido 2s infinite;
+      pointer-events: auto; 
+    }
+    
+    #sobre-sorpresa:hover {
+      filter: drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 40px #00d2ff);
+      transform: scale(1.1);
+    }
+
+    #modal-carta {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(2, 2, 12, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    #modal-carta.abierto {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .carta-contenido {
+      background: rgba(10, 20, 40, 0.6);
+      border: 1px solid rgba(0, 210, 255, 0.4);
+      box-shadow: 0 0 30px rgba(0, 82, 212, 0.6), inset 0 0 20px rgba(0, 210, 255, 0.1);
+      border-radius: 15px;
+      padding: 40px 30px;
+      max-width: 90%;
+      width: 450px;
+      text-align: center;
+      position: relative;
+      transform: scale(0.8) translateY(20px);
+      transition: transform 0.5s ease;
+      color: white;
+    }
+
+    #modal-carta.abierto .carta-contenido {
+      transform: scale(1) translateY(0);
+    }
+
+    .carta-contenido h3 {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      color: #00d2ff;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+    }
+
+    .carta-contenido p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #e6f2ff;
+      font-weight: 500;
+    }
+
+    .cerrar-carta {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 2rem;
+      color: #00d2ff;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: 0.3s;
+    }
+
+    .cerrar-carta:hover {
+      opacity: 1;
+      color: #ffffff;
+      transform: scale(1.1);
+    }
+
+    /* Animaciones de entrada generales */
+    .oculto {
+      opacity: 0;
+      transform: scale(0.9) translateY(15px);
+      transition: opacity 4.5s ease-in-out, transform 4.5s ease-in-out;
+    }
+    body.activo .oculto { 
+      opacity: 1; 
+      transform: scale(1) translateY(0);
+    }
+
+    /* ESTILO DE FRASES */
+    .frase {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 0 5px #000, 0 0 15px #00d2ff, 0 0 25px #0052d4; 
+      animation: flotar 5s ease-in-out infinite alternate; 
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ESTILO DE FOTOS */
+    .tarjeta-foto {
+      width: 100px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 4px;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+      animation: flotar 6s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .tarjeta-foto img { width: 100%; height: 90px; object-fit: cover; border-radius: 2px; display: block; }
+    .tarjeta-foto span { display: none; } 
+
+    /* RETRASOS DE ANIMACIÓN */
+    .f-1 { animation-delay: 0s; }    .f-2 { animation-delay: 1.5s; }
+    .f-3 { animation-delay: 3s; }    .f-4 { animation-delay: 1s; }
+    .f-5 { animation-delay: 2.5s; }  .f-6 { animation-delay: 0.5s; }
+    .f-7 { animation-delay: 2.1s; }  .f-8 { animation-delay: 1.8s; }
+    .f-9 { animation-delay: 0.2s; }  .f-10 { animation-delay: 2.7s; }
+    .f-11 { animation-delay: 1.3s; } .f-12 { animation-delay: 3.2s; }
+    .f-13 { animation-delay: 0.8s; } .f-14 { animation-delay: 2.4s; }
+    .f-15 { animation-delay: 1.7s; } .f-16 { animation-delay: 0.4s; }
+    .p-1 { animation-delay: 1.2s; transform: rotate(-6deg); }
+    .p-2 { animation-delay: 2.8s; transform: rotate(5deg); }
+    .p-3 { animation-delay: 0.7s; transform: rotate(-4deg); }
+    .p-4 { animation-delay: 3.2s; transform: rotate(3deg); }
+    .p-5 { animation-delay: 1.5s; transform: rotate(-5deg); }
+    .p-6 { animation-delay: 2.1s; transform: rotate(6deg); }
+    .p-7 { animation-delay: 0.3s; transform: rotate(-3deg); }
+    .p-8 { animation-delay: 2.5s; transform: rotate(4deg); }
+    .p-9 { animation-delay: 1.1s; transform: rotate(-7deg); }
+    .p-10 { animation-delay: 0.9s; transform: rotate(5deg); }
+
+    @keyframes flotar {
+      0% { transform: translateY(0px) rotate(inherit); }
+      100% { transform: translateY(-10px) rotate(inherit); }
+    }
+    @keyframes latido {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.04); }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
+</head>
+<body>
+
+  <div id="pantalla-inicio">
+    <h2>Para Mi Kei 💙</h2>
+    <p>Haz clic en cualquier lugar para comenzar</p>
+  </div>
+
+  <div id="flash-supernova"></div>
+  <canvas id="canvas-espacio"></canvas>
+
+  <div id="titulo-fijo" class="oculto">
+    <h1>Je T'aime</h1>
+    <p>Mi CONSENTIDA</p>
+  </div>
+
+  <div id="modal-carta">
+    <div class="carta-contenido">
+      <span class="cerrar-carta" id="btn-cerrar">&times;</span>
+      <h3>Mi Acetaminofen 💙</h3>
+      
+      <p>
+        Quiero que sepas que te quiero profundamnte, que sin importar donde estemos o las circunstancias que nos rodeen, te quiero con todo mi ser. Eres ese lugar donde puedo ser yo mismo, sin pretender se alguien mas, admiro la persona 	tan maravillosa que eres y esa forma tan especial que tienes de existir, ojala podamamos hacer que funcione por que nadie me entiende como tu lo haces y no quiero a nadie de la manera en la que te quiero a ti<br><br>
+        ¡Feliz Dia Mi CIELITO! ✨
+      </p>
+      </div>
+  </div>
+
+  <audio id="audio-fondo" loop>
+    <source src="Amor.mp3" type="audio/mpeg">
+  </audio>
+
+  <div id="elementos-html">
+    
+    <div id="sobre-sorpresa" class="oculto" title="¡Hazme clic!">💌</div>
+
+    <div class="frase f-1 oculto">Mi Acetaminofen ✨</div>
+    <div class="frase f-2 oculto">Mi Consentida 💙</div>
+    <div class="frase f-3 oculto">Mi Chaparra 🪐</div>
+    <div class="frase f-4 oculto">Te Quiero Demasiado ✨</div>
+    <div class="frase f-5 oculto">Eres Divina 🌌</div>
+    <div class="frase f-6 oculto">Eres Maravillosa💫</div>
+    <div class="frase f-7 oculto">Mi Paz 🤍</div>
+    <div class="frase f-8 oculto">Te Amo 3 Millones ♾️</div>
+    <div class="frase f-9 oculto">Tu Eres Mi Camino 🏡</div>
+    <div class="frase f-10 oculto">Trate vivir mi vida sin ti 💘</div>
+    <div class="frase f-11 oculto">No Puedo Te Amo 🌙</div>
+    <div class="frase f-12 oculto">Solo Te Siento A Ti ✨</div>
+    <div class="frase f-13 oculto">Te Amo En Todos Los Universos 🫶</div>
+    <div class="frase f-14 oculto">Tu Me Haces Digno 🚀</div>
+    <div class="frase f-15 oculto">Tus Locuras Van Con Mis Locuras 🎨</div>
+    <div class="frase f-16 oculto">Solo Quiero Que Estes Bien Y Ya 🍀</div>
+
+    <div class="tarjeta-foto p-1 oculto"><img src="1.jpeg" alt="Nosotros"></div>
+    <div class="tarjeta-foto p-2 oculto"><img src="2.jpeg" alt="Momentos"></div>
+    <div class="tarjeta-foto p-3 oculto"><img src="3.jpeg" alt="Amor"></div>
+    <div class="tarjeta-foto p-4 oculto"><img src="4.jpeg" alt="Recuerdos"></div>
+    <div class="tarjeta-foto p-5 oculto"><img src="5.jpeg" alt="Manos"></div>
+    <div class="tarjeta-foto p-6 oculto"><img src="6.jpeg" alt="Flores"></div>
+    <div class="tarjeta-foto p-7 oculto"><img src="8.jpeg" alt="Atardecer"></div>
+    <div class="tarjeta-foto p-8 oculto"><img src="9.jpeg" alt="Luces"></div>
+    <div class="tarjeta-foto p-9 oculto"><img src="7.jpeg" alt="Felicidad"></div>
+    <div class="tarjeta-foto p-10 oculto"><img src="11.jpeg" alt="Naturaleza"></div>
+  </div>
+
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x02020a); 
+    scene.fog = new THREE.FogExp2(0x02020a, 0.0003); 
+
+    const canvas = document.getElementById('canvas-espacio');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const labelRenderer = new THREE.CSS3DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none'; 
+    labelRenderer.domElement.style.zIndex = '5'; 
+    document.body.appendChild(labelRenderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 15000);
+    camera.position.set(0, 25, 3000); 
+    
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.03; 
+    controls.enablePan = true;   
+    controls.maxDistance = 2000; 
+    controls.minDistance = 10;   
+    controls.target.set(0, 18, 0);
+    controls.enabled = false; 
+
+    const destinoCamara = { x: 0, y: 55, z: 200 };
+    const flashDiv = document.getElementById('flash-supernova');
+    const pantallaInicio = document.getElementById('pantalla-inicio');
+    const audioFondo = document.getElementById('audio-fondo');
+    
+    let juegoIniciado = false;
+    let faseAnimacion = 0; 
+    let velocidadEstrellas = 30; 
+    let opacidadFlash = 0;
+    let galaxyScale = 0.0; 
+    let escalaCorazon = 0.0; 
+    let heartOpacity = 0.0;
+
+    pantallaInicio.addEventListener('click', () => {
+      if (!juegoIniciado) {
+        juegoIniciado = true;
+        
+        audioFondo.play().catch(e => console.log("Audio bloqueado:", e));
+
+        pantallaInicio.style.opacity = '0';
+        setTimeout(() => {
+          pantallaInicio.style.display = 'none';
+        }, 1000);
+
+        document.body.style.cursor = 'grab';
+      }
+    });
+
+    // LÓGICA DE LA CARTA SECRETA
+    const sobreSorpresa = document.getElementById('sobre-sorpresa');
+    const modalCarta = document.getElementById('modal-carta');
+    const btnCerrar = document.getElementById('btn-cerrar');
+
+    sobreSorpresa.addEventListener('pointerdown', (e) => {
+      e.stopPropagation(); 
+      modalCarta.classList.add('abierto');
+    });
+
+    btnCerrar.addEventListener('click', () => {
+      modalCarta.classList.remove('abierto');
+    });
+
+    modalCarta.addEventListener('click', (e) => {
+      if (e.target === modalCarta) {
+        modalCarta.classList.remove('abierto');
+      }
+    });
+
+    // --- TEXTURAS ---
+    function crearTexturaBrillante() {
+      const c = document.createElement('canvas');
+      c.width = 32; c.height = 32;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.3, 'rgba(200, 240, 255, 0.8)');
+      grad.addColorStop(0.7, 'rgba(100, 180, 255, 0.2)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 32, 32);
+      return new THREE.CanvasTexture(c);
+    }
+    const texturaBrillante = crearTexturaBrillante();
+
+    function crearTexturaNebulosa() {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.2, 'rgba(200, 200, 255, 0.8)');
+      grad.addColorStop(0.5, 'rgba(100, 100, 255, 0.3)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(c);
+    }
+    const texturaNebulosa = crearTexturaNebulosa();
+
+    // 1. ESTRELLAS DE FONDO
+    const cantidadFondo = 20000;
+    const fondoGeometry = new THREE.BufferGeometry();
+    const fondoPositions = new Float32Array(cantidadFondo * 3);
+    for(let i = 0; i < cantidadFondo; i++) {
+      const i3 = i * 3;
+      fondoPositions[i3] = (Math.random() - 0.5) * 10000;     
+      fondoPositions[i3 + 1] = (Math.random() - 0.5) * 10000; 
+      fondoPositions[i3 + 2] = (Math.random() - 0.5) * 10000; 
+    }
+    fondoGeometry.setAttribute('position', new THREE.BufferAttribute(fondoPositions, 3));
+    const fondoMaterial = new THREE.PointsMaterial({
+      color: 0xffffff, size: 1.4, transparent: true, opacity: 0.8, sizeAttenuation: true, depthWrite: false
+    });
+    const universoFondo = new THREE.Points(fondoGeometry, fondoMaterial);
+    scene.add(universoFondo);
+
+    // 2. NEBULOSAS
+    const cantNebulosas = 400; 
+    const nebulosaGeo = new THREE.BufferGeometry();
+    const nebPositions = new Float32Array(cantNebulosas * 3);
+    const nebColors = new Float32Array(cantNebulosas * 3);
+    const colAzulProfundo = new THREE.Color(0x1a237e); 
+    const colMorado = new THREE.Color(0x6a1b9a);
+    const colCyan = new THREE.Color(0x00bcd4);
+
+    for(let i = 0; i < cantNebulosas; i++) {
+      const i3 = i * 3;
+      nebPositions[i3] = (Math.random() - 0.5) * 10000;
+      nebPositions[i3 + 1] = (Math.random() - 0.5) * 10000;
+      nebPositions[i3 + 2] = (Math.random() - 0.5) * 10000;
+      const mix = Math.random();
+      let colorNeb = colAzulProfundo;
+      if (mix > 0.4) colorNeb = colMorado;
+      if (mix > 0.75) colorNeb = colCyan;
+      nebColors[i3] = colorNeb.r; nebColors[i3+1] = colorNeb.g; nebColors[i3+2] = colorNeb.b;
+    }
+    nebulosaGeo.setAttribute('position', new THREE.BufferAttribute(nebPositions, 3));
+    nebulosaGeo.setAttribute('color', new THREE.BufferAttribute(nebColors, 3));
+
+    const nebulosaMat = new THREE.PointsMaterial({
+      size: 1000, vertexColors: true, map: texturaNebulosa, transparent: true, opacity: 0.15, depthWrite: false, blending: THREE.AdditiveBlending 
+    });
+    const universoNebulosas = new THREE.Points(nebulosaGeo, nebulosaMat);
+    scene.add(universoNebulosas);
+
+    // 3. POLVO MÁGICO
+    const burstCount = 6000; 
+    const burstGeo = new THREE.BufferGeometry();
+    const burstPos = new Float32Array(burstCount * 3);
+    const burstVel = new Float32Array(burstCount * 3); 
+    const burstColors = new Float32Array(burstCount * 3);
+    const colorBlanco = new THREE.Color(0xffffff);
+    const colorCianClaro = new THREE.Color(0x88ccff); 
+    const colorAzulBrillante = new THREE.Color(0x0052d4); 
+
+    for(let i=0; i<burstCount; i++) {
+      const i3 = i*3;
+      burstPos[i3] = 0; burstPos[i3+1] = 18; burstPos[i3+2] = 0;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      const speed = Math.random() * 6 + 1.5; 
+      burstVel[i3] = Math.sin(phi) * Math.cos(theta) * speed;
+      burstVel[i3+1] = Math.sin(phi) * Math.sin(theta) * speed;
+      burstVel[i3+2] = Math.cos(phi) * speed;
+      const mix = Math.random();
+      let color = colorBlanco;
+      if(mix > 0.5) color = colorCianClaro;
+      if(mix > 0.8) color = colorAzulBrillante;
+      burstColors[i3] = color.r; burstColors[i3+1] = color.g; burstColors[i3+2] = color.b;
+    }
+    burstGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
+    burstGeo.setAttribute('color', new THREE.BufferAttribute(burstColors, 3));
+
+    const burstMat = new THREE.PointsMaterial({
+      size: 2.5, vertexColors: true, map: texturaBrillante, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 
+    });
+    const burstParticles = new THREE.Points(burstGeo, burstMat);
+    scene.add(burstParticles);
+
+    // ==========================================
+    // DISTRIBUCIÓN 3D DE ELEMENTOS
+    // ==========================================
+    const elementos3D = [];
+
+    function crearEtiqueta3D(selector, x, y, z) {
+      const elemento = document.querySelector(selector);
+      if(!elemento) return;
+      const contenedor = document.createElement('div');
+      contenedor.appendChild(elemento); 
+      const etiqueta = new THREE.CSS3DObject(contenedor);
+      etiqueta.position.set(x, y, z);
+      etiqueta.scale.set(0.18, 0.18, 0.18); 
+      scene.add(etiqueta);
+      elementos3D.push(etiqueta);
+    }
+    
+    // AHORA EL SOBRE ESTÁ EXACTAMENTE EN Y=24 (El mismo punto de origen del corazón)
+    crearEtiqueta3D('#sobre-sorpresa', 0, 24, 0);
+
+    crearEtiqueta3D('.f-1', -60, 45, 80);    
+    crearEtiqueta3D('.f-2', 70, 55, 30);     
+    crearEtiqueta3D('.f-3', -45, 15, -80);   
+    crearEtiqueta3D('.f-4', 55, 10, 100);    
+    crearEtiqueta3D('.f-5', 30, 80, -40);    
+    crearEtiqueta3D('.f-6', -80, 60, -120);  
+    crearEtiqueta3D('.f-7', 0, -5, 60);      
+    crearEtiqueta3D('.f-8', 15, 95, -150);   
+    crearEtiqueta3D('.f-9', -120, 20, 50);   
+    crearEtiqueta3D('.f-10', 150, 70, -100); 
+    crearEtiqueta3D('.f-11', -20, 110, 80);  
+    crearEtiqueta3D('.f-12', 90, 5, 200);    
+    crearEtiqueta3D('.f-13', -180, 50, -200);
+    crearEtiqueta3D('.f-14', 120, -15, -50); 
+    crearEtiqueta3D('.f-15', -80, -20, 150); 
+    crearEtiqueta3D('.f-16', 40, 120, -250); 
+
+    crearEtiqueta3D('.p-1', -80, 25, 40);    
+    crearEtiqueta3D('.p-2', 90, 45, -50);    
+    crearEtiqueta3D('.p-3', -50, 85, -100);  
+    crearEtiqueta3D('.p-4', 65, 0, 80);      
+    crearEtiqueta3D('.p-5', -150, 60, -80);  
+    crearEtiqueta3D('.p-6', 120, 80, 120);   
+    crearEtiqueta3D('.p-7', -100, -10, 180); 
+    crearEtiqueta3D('.p-8', 180, 20, -150);  
+    crearEtiqueta3D('.p-9', 0, 130, -50);    
+    crearEtiqueta3D('.p-10', -30, -30, -120);
+
+    // ==========================================
+    // GALAXIA
+    // ==========================================
+    const galaxyParams = { count: 22000, size: 1.4, radius: 95, branches: 4, spin: 1.3, randomness: 0.6, insideColor: '#ffffff', outsideColor: '#0052d4' };
+    const galaxyGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(galaxyParams.count * 3);
+    const colors = new Float32Array(galaxyParams.count * 3);
+    const colorInside = new THREE.Color(galaxyParams.insideColor);
+    const colorOutside = new THREE.Color(galaxyParams.outsideColor);
+
+    for (let i = 0; i < galaxyParams.count; i++) {
+      const i3 = i * 3;
+      const r = Math.pow(Math.random(), 2.2) * galaxyParams.radius;
+      const spinAngle = r * galaxyParams.spin;
+      const branchAngle = ((i % galaxyParams.branches) / galaxyParams.branches) * Math.PI * 2;
+      const randomX = (Math.random() - 0.5) * galaxyParams.randomness * r;
+      const randomY = (Math.random() - 0.5) * (galaxyParams.randomness * 0.4) * r;
+      const randomZ = (Math.random() - 0.5) * galaxyParams.randomness * r;
+      positions[i3] = Math.cos(branchAngle + spinAngle) * r + randomX;
+      positions[i3 + 1] = randomY;
+      positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
+      const mixedColor = colorInside.clone().lerp(colorOutside, r / galaxyParams.radius);
+      colors[i3] = mixedColor.r; colors[i3 + 1] = mixedColor.g; colors[i3 + 2] = mixedColor.b;
+    }
+    galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const galaxyMaterial = new THREE.PointsMaterial({ size: galaxyParams.size, sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true, map: texturaBrillante, transparent: true });
+    
+    const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
+    const grupoGalaxia = new THREE.Group();
+    grupoGalaxia.rotation.x = 0.58; 
+    grupoGalaxia.scale.set(0, 0, 0);
+    grupoGalaxia.add(galaxy);
+    scene.add(grupoGalaxia);
+
+    // ==========================================
+    // CÁPSULA DE ENERGÍA ALREDEDOR DEL SOBRE 🔮
+    // ==========================================
+    const auraGeometry = new THREE.BufferGeometry();
+    const auraCount = 800;
+    const auraPos = new Float32Array(auraCount * 3);
+    for(let i=0; i<auraCount; i++){
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = 9; 
+        auraPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+        auraPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+        auraPos[i*3+2] = r * Math.cos(phi);
+    }
+    auraGeometry.setAttribute('position', new THREE.BufferAttribute(auraPos, 3));
+    const auraMaterial = new THREE.PointsMaterial({size: 1.5, color: 0x00d2ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, map: texturaBrillante, depthWrite: false});
+    const aura = new THREE.Points(auraGeometry, auraMaterial);
+    // ¡AQUÍ ESTÁ LA MAGIA! Comparten exactamente el mismo punto de anclaje (0, 24, 0)
+    aura.position.set(0, 24, 0); 
+    scene.add(aura);
+
+    // ==========================================
+    // CORAZÓN MÁGICO (CENTRO PERFECTO)
+    // ==========================================
+    const heartGeometry = new THREE.BufferGeometry();
+    const heartCount = 3500;
+    const heartPositions = new Float32Array(heartCount * 3);
+    const heartColors = new Float32Array(heartCount * 3);
+    for (let i = 0; i < heartCount; i++) {
+      const i3 = i * 3;
+      const t = Math.PI * 2 * Math.random();
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      const dispersion = (Math.random() - 0.5) * 1.5;
+      const escala = 1.35;
+      
+      // ¡AQUÍ ESTÁ EL ARREGLO MATEMÁTICO!
+      // Alineamos la geometría para que el centro visual del corazón sea 0,0,0
+      heartPositions[i3] = (x + dispersion) * escala;
+      heartPositions[i3 + 1] = (y + 2.5 + dispersion) * escala; 
+      heartPositions[i3 + 2] = (Math.random() - 0.5) * 4;
+      
+      heartColors[i3] = 0.85 + Math.random() * 0.15; 
+      heartColors[i3 + 1] = 0.95;                    
+      heartColors[i3 + 2] = 1.0;                     
+    }
+    heartGeometry.setAttribute('position', new THREE.BufferAttribute(heartPositions, 3));
+    heartGeometry.setAttribute('color', new THREE.BufferAttribute(heartColors, 3));
+    
+    const heartMaterial = new THREE.PointsMaterial({ size: 2.0, sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true, map: texturaBrillante, transparent: true, opacity: 0 });
+    const heartParticles = new THREE.Points(heartGeometry, heartMaterial);
+    
+    // Y aquí lo ubicamos en el mismo punto exacto que el sobre y el aura
+    heartParticles.position.set(0, 24, 0); 
+    heartParticles.scale.set(0, 0, 0); 
+    scene.add(heartParticles);
+
+    // MOTOR CINEMÁTICO 
+    const reloj = new THREE.Clock();
+
+    function animar() {
+      requestAnimationFrame(animar);
+      const tiempo = reloj.getElapsedTime();
+
+      if (!juegoIniciado) return;
+
+      // ¡NUNCA MÁS SE SEPARARÁN!
+      // El corazón 3D y todos los elementos 2D/3D miran a la cámara al unísono
+      heartParticles.quaternion.copy(camera.quaternion);
+      elementos3D.forEach(el => {
+        el.quaternion.copy(camera.quaternion);
+      });
+
+      const posicionesEstrellas = universoFondo.geometry.attributes.position.array;
+      for(let i = 0; i < cantidadFondo; i++) {
+        const zIndex = (i * 3) + 2;
+        posicionesEstrellas[zIndex] += velocidadEstrellas; 
+        
+        if(posicionesEstrellas[zIndex] > camera.position.z + 4000) {
+          posicionesEstrellas[zIndex] -= 10000;
+          posicionesEstrellas[zIndex - 2] = camera.position.x + (Math.random() - 0.5) * 10000;
+          posicionesEstrellas[zIndex - 1] = camera.position.y + (Math.random() - 0.5) * 10000;
+        }
+      }
+      universoFondo.geometry.attributes.position.needsUpdate = true;
+
+      const posicionesNebulosas = universoNebulosas.geometry.attributes.position.array;
+      for(let i = 0; i < cantNebulosas; i++) {
+        const zIndex = (i * 3) + 2;
+        posicionesNebulosas[zIndex] += velocidadEstrellas * 0.85; 
+        
+        if(posicionesNebulosas[zIndex] > camera.position.z + 4000) {
+          posicionesNebulosas[zIndex] -= 10000;
+          posicionesNebulosas[zIndex - 2] = camera.position.x + (Math.random() - 0.5) * 10000;
+          posicionesNebulosas[zIndex - 1] = camera.position.y + (Math.random() - 0.5) * 10000;
+        }
+      }
+      universoNebulosas.geometry.attributes.position.needsUpdate = true;
+      universoNebulosas.rotation.z = tiempo * 0.02;
+
+      // --- FASES DE ANIMACIÓN ---
+      if (faseAnimacion === 0) {
+        camera.position.z -= Math.max((camera.position.z - 500) * 0.015, 12);
+        camera.position.y += (destinoCamara.y - camera.position.y) * 0.02;
+        
+        if (camera.position.z <= 650) {
+          faseAnimacion = 1;
+        }
+
+      } else if (faseAnimacion === 1) {
+        opacidadFlash += (0.7 - opacidadFlash) * 0.03; 
+        flashDiv.style.opacity = opacidadFlash;
+
+        burstMat.opacity += (0.8 - burstMat.opacity) * 0.03; 
+        const pArray = burstGeo.attributes.position.array;
+        for(let i=0; i<burstCount*3; i++) {
+            pArray[i] += burstVel[i]; 
+        }
+        burstGeo.attributes.position.needsUpdate = true;
+
+        camera.position.z += (destinoCamara.z - camera.position.z) * 0.03;
+        camera.position.y += (destinoCamara.y - camera.position.y) * 0.03;
+
+        if (opacidadFlash > 0.65) {
+          faseAnimacion = 2;
+          document.body.classList.add('activo'); 
+          controls.enabled = true; 
+        }
+
+      } else if (faseAnimacion === 2) {
+        controls.update(); 
+
+        opacidadFlash += (0 - opacidadFlash) * 0.015;
+        flashDiv.style.opacity = opacidadFlash;
+
+        burstMat.opacity += (0 - burstMat.opacity) * 0.01;
+        const pArray = burstGeo.attributes.position.array;
+        for(let i=0; i<burstCount*3; i++) {
+            pArray[i] += burstVel[i]; 
+            burstVel[i] *= 0.95; 
+        }
+        burstGeo.attributes.position.needsUpdate = true;
+
+        velocidadEstrellas += (0.05 - velocidadEstrellas) * 0.02;
+
+        galaxyScale += (1 - galaxyScale) * 0.015;
+        grupoGalaxia.scale.set(galaxyScale, galaxyScale, galaxyScale);
+
+        escalaCorazon += (1 - escalaCorazon) * 0.015;
+        heartOpacity += (1 - heartOpacity) * 0.015;
+        heartMaterial.opacity = heartOpacity;
+        
+        auraMaterial.opacity = heartOpacity * 0.6;
+        aura.rotation.y = tiempo * 0.5;
+        aura.rotation.x = tiempo * 0.2;
+
+        const pulso = escalaCorazon + Math.sin(tiempo * 2.0) * 0.025;
+        heartParticles.scale.set(pulso, pulso, pulso);
+        aura.scale.set(pulso, pulso, pulso); 
+      }
+
+      galaxy.rotation.y = tiempo * 0.04;
+
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    
+    animar();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
